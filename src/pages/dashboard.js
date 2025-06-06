@@ -1,17 +1,114 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  const adminCardRef = useRef(null);
+  const ownerLinkRef = useRef(null);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const [isOwner, setIsOwner] = useState(false);
+  const [ownerTeamId, setOwnerTeamId] = useState("");
+  const [rolesLoaded, setRolesLoaded] = useState(false); // Control render timing
+  const isUserAdmin = useRef(false);
+
+  useEffect(() => {
+    async function getRoles() {
+      try {
+        const response = await fetch("http://127.0.0.1:8000/users/roles", {
+          headers: {
+            "Content-Type": "application/json",
+            token: localStorage.getItem("token"),
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200) {
+          isUserAdmin.current = data.isAdmin;
+
+          if (data.teamOwner) {
+            setIsOwner(true);
+            setOwnerTeamId(data.isOwnerTeamId);
+          }
+
+          // Admin card always hidden
+          if (adminCardRef.current) {
+            adminCardRef.current.style.display = "none";
+          }
+
+        } else {
+          setErrorMessage("Bad Req(400): " + JSON.stringify(data));
+        }
+      } catch (error) {
+        setErrorMessage("Error: " + error.message);
+      } finally {
+        setRolesLoaded(true); // Only render once roles are evaluated
+      }
+    }
+
+    getRoles();
+  }, []);
+
+  const handlePlayerClick = () => {
+    if (isUserAdmin.current) {
+      navigate("/players?admin=true");
+    } else {
+      navigate("/players");
+    }
+  };
+
+  const handleTeamClick = () => {
+    if (isUserAdmin.current) {
+      navigate("/teams?admin=true");
+    } else {
+      navigate("/teams");
+    }
+  };
+
+  if (!rolesLoaded) return null; // Or return a loading spinner
+
   return (
-    <div className="d-flex align-items-center justify-content-center vh-100 bg-body-tertiary">
-      <main className="form-signin" style={{ width: "330px" }}>
-        <div className="container">
-          <div className="card p-4 shadow-sm">
-            <h2 className="h3 mb-3 fw-normal text-center">Dashboard</h2>
-            <p className="text-center">Welcome to the dashboard!</p>
-            <p className="text-center">
-              This is a placeholder for your dashboard content.
-            </p>
-          </div>
+    <div className="container mt-4">
+      {errorMessage && <p className="text-danger">{errorMessage}</p>}
+
+      <div
+        className="p-3 text-center bg-body-tertiary"
+        onClick={handlePlayerClick}
+        style={{ cursor: "pointer" }}
+      >
+        <div className="container py-3">
+          <h1 className="text-body-emphasis h3">Players</h1>
+          <p className="col-lg-6 mx-auto lead small">view and search Players</p>
         </div>
-      </main>
+      </div>
+
+      <div
+        className="p-3 text-center bg-body-tertiary"
+        onClick={handleTeamClick}
+        style={{ cursor: "pointer" }}
+      >
+        <div className="container py-3">
+          <h1 className="text-body-emphasis h3">Teams</h1>
+          <p className="col-lg-6 mx-auto lead small">view and search teams</p>
+        </div>
+      </div>
+
+      {/* Render owner card only if user is team owner */}
+      {isOwner && (
+        <a id="ownerTeamLink" ref={ownerLinkRef} href={`/teammanage?id=${ownerTeamId}`}>
+          <div className="p-3 text-center bg-body-tertiary">
+            <div className="container py-3">
+              <h1 className="text-body-emphasis h3">Edit Team Details</h1>
+              <p className="col-lg-6 mx-auto lead small">
+                view and edit teams owned by you
+              </p>
+            </div>
+          </div>
+        </a>
+      )}
     </div>
   );
 }
+
