@@ -5,7 +5,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const adminCardRef = useRef(null);
-  const ownerLinkRef = useRef(null);
+ // const ownerLinkRef = useRef(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [isOwner, setIsOwner] = useState(false);
@@ -97,7 +97,10 @@ export default function Dashboard() {
 
       {/* Render owner card only if user is team owner */}
       {isOwner && (
-        <a id="ownerTeamLink" ref={ownerLinkRef} href={`/teammanage?id=${ownerTeamId}`}>
+        <div
+          onClick={() => navigate("/editteam")}
+          style={{ cursor: "pointer" }}
+        >
           <div className="p-3 text-center bg-body-tertiary">
             <div className="container py-3">
               <h1 className="text-body-emphasis h3">Edit Team Details</h1>
@@ -106,7 +109,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-        </a>
+        </div>
       )}
     </div>
   );

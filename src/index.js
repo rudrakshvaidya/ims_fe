@@ -10,6 +10,7 @@ import Players from './pages/players';
 import Teams from './pages/teams';
 import PlayerStats from './pages/playerstats';
 import TeamStats from './pages/teamstats';
+import EditTeam from './pages/editteam';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -23,6 +24,7 @@ root.render(
         <Route path="/teams" element={<Teams />} />
         <Route path="/playerstats/:id" element={<PlayerStats />} />
         <Route path="/teamstats/:id" element={<TeamStats />} />
+        <Route path="/editteam" element={<EditTeam />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
